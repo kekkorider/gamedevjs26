@@ -28,15 +28,15 @@
     },
     "dependencies": {
         "phaser": "^3.90.0",
-        "vue": "3.5.13"
+        "vue": "3.5.32"
     },
     "devDependencies": {
-        "@types/node": "^20.11.20",
-        "terser": "^5.31.0",
-        "@vitejs/plugin-vue": "^5.2.2",
-        "@vue/tsconfig": "^0.7.0",
-        "typescript": "~5.7.2",
-        "vite": "^6.3.1",
-        "vue-tsc": "^2.2.8"
+        "@types/node": "^24",
+        "terser": "^5.46.1",
+        "@vitejs/plugin-vue": "^6.0.5",
+        "@vue/tsconfig": "^0.9.1",
+        "typescript": "~6.0.2",
+        "vite": "^8.0.5",
+        "vue-tsc": "^3.2.6"
     }
 }
