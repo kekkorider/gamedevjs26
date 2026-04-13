@@ -24,6 +24,13 @@ export class Preloader extends Scene
             //  Update the progress bar (our bar is 464px wide, so 100% = 464px)
             bar.width = 4 + (460 * progress);
 
+            window.WavedashJS?.updateLoadProgressZeroToOne(progress);
+
+            console.log(window.WavedashJS);
+
+            if (progress === 1) {
+                window.WavedashJS?.loadComplete();
+            }
         });
     }
 

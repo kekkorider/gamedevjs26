@@ -12,7 +12,7 @@ const config: Phaser.Types.Core.GameConfig = {
     width: 1024,
     height: 768,
     pixelArt: true,
-    parent: 'game-container',
+    parent: 'wavedash-target',
     backgroundColor: '#028af8',
     scene: [
         Boot,

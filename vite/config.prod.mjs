@@ -33,8 +33,12 @@ export default defineConfig({
     build: {
         rollupOptions: {
             output: {
-                manualChunks: {
-                    phaser: ['phaser']
+                entryFileNames: 'assets/[name].js',
+                chunkFileNames: 'assets/[name].js',
+                manualChunks(id) {
+                    if (id.includes('/node_modules/phaser/')) {
+                        return 'phaser';
+                    }
                 }
             }
         },

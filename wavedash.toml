@@ -1,0 +1,6 @@
+game_id = "j97dhc6q36q0qkkm926mtqthfx84rg3v"
+upload_dir = "./dist"
+
+[custom]
+version = "1.0.0"
+entrypoint = "assets/index.js"
