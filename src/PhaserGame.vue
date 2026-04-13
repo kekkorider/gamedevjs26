@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import { EventBus } from "./game/EventBus";
 import StartGame from "./game/main";
-import Phaser from "phaser";
+import * as Phaser from "phaser";
 
 // Save the current scene instance
 const scene = ref();

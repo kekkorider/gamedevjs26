@@ -4,18 +4,14 @@ import { EventBus } from '../EventBus';
 
 export class MainMenu extends Scene
 {
-    background: GameObjects.Image;
     logo: GameObjects.Image;
     button: GameObjects.Text;
 
-    constructor ()
-    {
+    constructor () {
         super('MainMenu');
     }
 
-    create ()
-    {
-        this.background = this.add.image(this.scale.width / 2, 384, 'background');
+    create () {
 
         this.logo = this.add.image(this.scale.width / 2, 300, 'logo').setDepth(100);
 
@@ -44,7 +40,7 @@ export class MainMenu extends Scene
         EventBus.emit('current-scene-ready', this);
     }
 
-    changeScene (){
+    changeScene() {
         this.scene.start('Game');
     }
 }
