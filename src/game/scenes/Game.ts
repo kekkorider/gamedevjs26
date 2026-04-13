@@ -1,8 +1,8 @@
 import { EventBus } from '../EventBus';
 import { Player } from '../gameObjects/Player';
-import { Scene } from 'phaser';
+import * as Phaser from 'phaser';
 
-export class Game extends Scene
+export class Game extends Phaser.Scene
 {
     camera: Phaser.Cameras.Scene2D.Camera;
     background: Phaser.GameObjects.Image;
@@ -20,7 +20,7 @@ export class Game extends Scene
     }
 
     create () {
-        this.camera = this.cameras.main;
+        this.camera = this.cameras.main as Phaser.Cameras.Scene2D.Camera;
         this.background = this.add.image(this.scale.width / 2, this.scale.height / 2, 'sky');
 
         this.createLevel();
@@ -62,7 +62,7 @@ export class Game extends Scene
             }
         });
 
-        this.stars.children.iterate(child => {
+        this.stars.children.forEach(child => {
             (child as Phaser.Physics.Arcade.Sprite).body!.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8))
         })
 
@@ -83,7 +83,7 @@ export class Game extends Scene
         this.scoreText.setText(`Score: ${++this.score}`);
 
         if(this.stars.countActive() === 0) {
-            this.stars.children.iterate(child => {
+            this.stars.children.forEach(child => {
                 (child as Phaser.Physics.Arcade.Sprite).enableBody(true, child.x, 0, true, true);
             })
 
