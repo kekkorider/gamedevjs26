@@ -19,6 +19,7 @@ export type PatientType = {
 }
 
 export type MachineType = {
+  id: string;
   diseases: DiseaseType[];
   purchaseCost: number;
   usageCost: number;

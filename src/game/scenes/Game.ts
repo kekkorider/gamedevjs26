@@ -1,6 +1,9 @@
 import { EventBus } from '../EventBus';
 import { EVENTS } from '../Constants';
 import * as Phaser from 'phaser';
+import { Machine } from '../classes';
+import * as Machines from '../gameObjects/Machines';
+import { Button } from '../ui/Button';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -16,7 +19,8 @@ export class Game extends Phaser.Scene {
     create () {
         this.camera = this.cameras.main as Phaser.Cameras.Scene2D.Camera;
 
-        this.createTimer();
+        this.createUI();
+        // this.createTimer();
 
         this.scoreText = this.add.text(16, 16, 'Money: 0', { fontSize: '32px', color: '#fff' });
 
@@ -26,6 +30,24 @@ export class Game extends Phaser.Scene {
     update() {}
 
     newRound() {}
+
+    createUI() {
+        const machine = new Machine(Machines.MRI.machine);
+
+        const addMachineButton = new Button(
+            this,
+            20,
+            this.scale.height - 20,
+            'Add Machine',
+            this.addMachine.bind(this, machine)
+        );
+        addMachineButton.setOrigin(0, 1);
+        addMachineButton.setFontSize(20);
+    }
+
+    addMachine(Machine: Machine) {
+        console.log(Machine);
+    }
 
     createTimer() {
         this.timer = this.time.addEvent({
