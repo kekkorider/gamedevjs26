@@ -10,7 +10,7 @@ export class Game extends Phaser.Scene {
     scoreText: Phaser.GameObjects.Text;
     isGameOver: boolean = false;
     timer: Phaser.Time.TimerEvent;
-    money: number = 10;
+    money: number = 10000;
 
     constructor () {
         super('Game');
@@ -22,7 +22,7 @@ export class Game extends Phaser.Scene {
         this.createUI();
         // this.createTimer();
 
-        this.scoreText = this.add.text(16, 16, 'Money: 0', { fontSize: '32px', color: '#fff' });
+        this.scoreText = this.add.text(16, 16, `Money: ${this.money}`, { fontSize: '32px', color: '#fff' });
 
         EventBus.emit(EVENTS.CURRENT_SCENE_READY, this);
     }
@@ -46,7 +46,19 @@ export class Game extends Phaser.Scene {
     }
 
     addMachine(Machine: Machine) {
-        console.log(Machine);
+        this.money -= Machine.machine.purchaseCost;
+        this.updateUI();
+        this.checkMoney();
+    }
+
+    updateUI() {
+        this.scoreText.setText(`Money: ${this.money}`);
+    }
+
+    checkMoney() {
+        if (this.money <= 0) {
+            this.gameOver();
+        }
     }
 
     createTimer() {
