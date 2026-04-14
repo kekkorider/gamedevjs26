@@ -3,7 +3,7 @@ import { EVENTS } from '../Constants';
 import * as Phaser from 'phaser';
 import { Machine, Patient, DiseaseType, Equip, MachineType } from '../classes';
 import { Button } from '../ui/Button';
-import { DiseaseList, PatientDetailsList } from '../Database';
+import { DiseaseList, MachineList, PatientDetailsType, PatientDetailsList } from '../Database';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -33,8 +33,11 @@ export class Game extends Phaser.Scene {
         EventBus.emit(EVENTS.CURRENT_SCENE_READY, this);
 
         this.equipToBuy.fill();
+        this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[0]));
+        this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[1]));
+        this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[2]));
 
-        this.updateMachinesDebug();
+        // this.updateMachinesDebug();
     }
 
     update() {}
@@ -44,8 +47,10 @@ export class Game extends Phaser.Scene {
         const disease: DiseaseType = Phaser.Math.RND.pick(DiseaseList);
 
         // Pick a random patient details (name and gender)
-        const details: any = Phaser.Math.RND.pick(PatientDetailsList);
+        const details: PatientDetailsType = Phaser.Math.RND.pick(PatientDetailsList);
         this.patient = new Patient(disease, details.name, details.gender, 1000, 2000);
+
+        console.log('👨‍⚕️ New patient:', this.patient);
 
         this.updateUI();
     }
@@ -176,14 +181,14 @@ export class Game extends Phaser.Scene {
 
         this.updateUI();
         this.checkMoney();
-        this.updateMachinesDebug();
+        // this.updateMachinesDebug();
     }
 
     pickMachineFromOwned(machine: MachineType) {
         const picked = this.equipOwned.pick(machine);
         this.equipToBuy.addMachine(picked);
 
-        this.updateMachinesDebug();
+        // this.updateMachinesDebug();
     }
 
     selectMachine(machine: MachineType) {
@@ -200,7 +205,7 @@ export class Game extends Phaser.Scene {
             console.log('✅ Machine selected.', machine);
         }
 
-        this.updateMachinesDebug();
+        // this.updateMachinesDebug();
 
         console.log('⏸️ Total machines selected:', this.selectedEquip.count());
     }

@@ -1,4 +1,11 @@
-export const DiseaseList = [
+import { DiseaseType, MachineType } from "./classes";
+
+export type PatientDetailsType = {
+    gender: string;
+    name: string;
+}
+
+export const DiseaseList: DiseaseType[] = [
     { id: 1, label: "tumori / cancro / metastasi / attività tumorale" },
     { id: 2, label: "lesioni cerebrali" },
     { id: 3, label: "disturbi articolari" },
@@ -25,7 +32,7 @@ export const DiseaseList = [
     { id: 24, label: "squilibri metabolici" },
 ]
 
-export const MachineList = [
+export const MachineList: MachineType[] = [
     { id: 1, label: "MRI (Magnetic Resonance Imaging)", diseases: [1, 2, 3], purchaseCost: 1000, usageCost: 200 },
     { id: 2, label: "CT scan (Computed Tomography)", diseases: [4, 1, 5], purchaseCost: 1000, usageCost: 200 },
     { id: 3, label: "X-ray", diseases: [5, 6], purchaseCost: 1000, usageCost: 200 },
@@ -48,7 +55,7 @@ export const MachineList = [
     { id: 20, label: "Blood analyzer (hematology analyzer)", diseases: [22, 23, 24], purchaseCost: 1000, usageCost: 200 },
 ]
 
-export const PatientDetailsList = [
+export const PatientDetailsList: PatientDetailsType[] = [
     { gender: "f", name: "Ava" },
     { gender: "f", name: "Charlotte" },
     { gender: "f", name: "Chloe" },

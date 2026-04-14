@@ -1,3 +1,4 @@
+import { Math } from "phaser";
 import { MachineType } from "./index";
 import { EVENTS } from "../Constants";
 import { EventBus } from "../EventBus";
@@ -12,8 +13,8 @@ export class Equip {
     return this.machines.length;
   }
 
-  addMachine(machine: MachineType | null) {
-    if (machine === null) return;
+  addMachine(machine: MachineType | null | undefined) {
+    if (!!!machine) return;
 
     this.machines.push(machine);
 
