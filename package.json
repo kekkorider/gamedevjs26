@@ -26,7 +26,8 @@
         "dev-nolog": "vite --config vite/config.dev.mjs",
         "build-nolog": "vite build --config vite/config.prod.mjs",
         "wavedash:push": "wavedash build push",
-        "wavedash:login": "wavedash auth login"
+        "wavedash:login": "wavedash auth login",
+        "itch:push": "pnpm build && butler push dist kekkorider/gamedevjs26:web"
     },
     "dependencies": {
         "phaser": "^4.0.0",

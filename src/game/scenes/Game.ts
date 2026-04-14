@@ -1,9 +1,9 @@
 import { EventBus } from '../EventBus';
 import { EVENTS } from '../Constants';
 import * as Phaser from 'phaser';
-import { Machine, Patient, DiseaseType } from '../classes';
+import { Machine, Patient, DiseaseType, Equip, MachineType } from '../classes';
 import { Button } from '../ui/Button';
-import { DiseaseList, PatientDetailsList } from '../Database';
+import { DiseaseList, PatientDetailsList, MachineList } from '../Database';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -13,6 +13,8 @@ export class Game extends Phaser.Scene {
     timer: Phaser.Time.TimerEvent;
     money: number = 10000;
     patient: Patient | null = null;
+    equipOwned: Equip = new Equip();
+    equipToBuy: Equip = new Equip();
 
     constructor () {
         super('Game');
@@ -22,11 +24,10 @@ export class Game extends Phaser.Scene {
         this.camera = this.cameras.main as Phaser.Cameras.Scene2D.Camera;
 
         this.createUI();
-        // this.createTimer();
-
-        this.scoreText = this.add.text(20, 16, `Money: ${this.money}`, { fontSize: '32px', color: '#fff' });
 
         EventBus.emit(EVENTS.CURRENT_SCENE_READY, this);
+
+        this.equipToBuy.fill();
     }
 
     update() {}
@@ -43,6 +44,8 @@ export class Game extends Phaser.Scene {
     }
 
     createUI() {
+        this.scoreText = this.add.text(20, 16, `Money: ${this.money}`, { fontSize: '32px', color: '#fff' });
+
         const newRoundButton = new Button(
             this,
             20,
@@ -61,6 +64,16 @@ export class Game extends Phaser.Scene {
         };
         this.patientInfoText = this.add.text(0, 100, "", textStyle);
         this.patientInfoText.setOrigin(0);
+
+        const pickRandomButton = new Button(
+            this,
+            20,
+            this.scale.height - 80,
+            'Pick random',
+            this.handlePickRandomButtonClick.bind(this)
+        );
+        pickRandomButton.setOrigin(0, 1);
+        pickRandomButton.setFontSize(20);
     }
 
     addMachine(Machine: Machine) {
@@ -89,27 +102,16 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}
         }
     }
 
-    createTimer() {
-        this.timer = this.time.addEvent({
-            delay: 1000,
-            callback: () => {
-                this.money--;
+    handlePickRandomButtonClick() {
+        const machine: MachineType | null = this.equipToBuy.pick(MachineList[0] as MachineType);
 
-                this.scoreText.setText(`Money: ${this.money}`);
-
-                if (this.money <= 0) {
-                    this.timer.destroy();
-
-                    this.time.addEvent({
-                        delay: 1000,
-                        callback: () => {
-                            this.gameOver();
-                        }
-                    })
-                }
-            },
-            repeat: -1
-        })
+        if (machine === null) {
+            console.log('❌ No machine picked');
+        } else {
+            console.log('✅ Machine picked: ', machine.label);
+            this.equipOwned.addMachine(machine);
+            this.updateUI();
+        }
     }
 
     gameOver () {
