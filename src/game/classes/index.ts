@@ -3,7 +3,7 @@ import { Patient } from "./Patient";
 import { Equip } from "./Equip";
 
 export type DiseaseType = {
-  id: string;
+  id: number;
   label: string;
 }
 
@@ -25,9 +25,9 @@ export type PatientType = {
 }
 
 export type MachineType = {
-  id: string;
+  id: number;
   label: string;
-  diseases: DiseaseType[];
+  diseases: number[];
   purchaseCost: number;
   usageCost: number;
 }

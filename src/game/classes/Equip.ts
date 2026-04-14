@@ -18,7 +18,7 @@ export class Equip {
 
   pick(machine: MachineType) {
     const item = this.machines.splice(this.machines.indexOf(machine), 1);
-    const picked = item[0] ?? null;
+    const picked = item[0];
 
     return picked;
   }

@@ -3,7 +3,7 @@ import { EVENTS } from '../Constants';
 import * as Phaser from 'phaser';
 import { Machine, Patient, DiseaseType, Equip, MachineType } from '../classes';
 import { Button } from '../ui/Button';
-import { DiseaseList, PatientDetailsList, MachineList } from '../Database';
+import { DiseaseList, PatientDetailsList } from '../Database';
 
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -15,6 +15,8 @@ export class Game extends Phaser.Scene {
     patient: Patient | null = null;
     equipOwned: Equip = new Equip();
     equipToBuy: Equip = new Equip();
+    equipOwnedTextDebug: Array<Phaser.GameObjects.Text> = [];
+    equipToBuyTextDebug: Array<Phaser.GameObjects.Text> = [];
 
     constructor () {
         super('Game');
@@ -28,6 +30,8 @@ export class Game extends Phaser.Scene {
         EventBus.emit(EVENTS.CURRENT_SCENE_READY, this);
 
         this.equipToBuy.fill();
+
+        this.updateMachinesDebug();
     }
 
     update() {}
@@ -55,25 +59,6 @@ export class Game extends Phaser.Scene {
         );
         newRoundButton.setOrigin(0, 1);
         newRoundButton.setFontSize(20);
-
-        const textStyle: Phaser.Types.GameObjects.Text.TextStyle = {
-            fontSize: '32px',
-            color: '#fff',
-            align: 'left',
-            backgroundColor: '#000000'
-        };
-        this.patientInfoText = this.add.text(0, 100, "", textStyle);
-        this.patientInfoText.setOrigin(0);
-
-        const pickRandomButton = new Button(
-            this,
-            20,
-            this.scale.height - 80,
-            'Pick random',
-            this.handlePickRandomButtonClick.bind(this)
-        );
-        pickRandomButton.setOrigin(0, 1);
-        pickRandomButton.setFontSize(20);
     }
 
     addMachine(Machine: Machine) {
@@ -102,16 +87,70 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}
         }
     }
 
-    handlePickRandomButtonClick() {
-        const machine: MachineType | null = this.equipToBuy.pick(MachineList[0] as MachineType);
+    updateMachinesDebug() {
+        // TO BUY
+        this.equipToBuyTextDebug.forEach((text: Phaser.GameObjects.Text) => {
+            text.destroy();
+        })
 
-        if (machine === null) {
-            console.log('❌ No machine picked');
-        } else {
-            console.log('✅ Machine picked: ', machine.label);
-            this.equipOwned.addMachine(machine);
-            this.updateUI();
+        this.equipToBuyTextDebug = []
+
+        const toBuyTextStyle: Phaser.Types.GameObjects.Text.TextStyle = {
+            fontSize: '16px',
+            color: '#fff',
+            align: 'left',
+            backgroundColor: '#000000',
+            padding: { left: 8, right: 8, top: 4, bottom: 4 }
+        };
+
+        this.equipToBuy.machines.forEach((machine: MachineType, index: number) => {
+            const text = this.add.text(20, 70 + 26*index, machine.label, toBuyTextStyle);
+            text.setInteractive({ useHandCursor: true });
+            text.setOrigin(0);
+            text.on('pointerdown', () => {
+                this.pickMachineFromAvailable(machine);
+            });
+            this.equipToBuyTextDebug.push(text);
+        })
+
+        // OWNED
+        this.equipOwnedTextDebug.forEach((text: Phaser.GameObjects.Text) => {
+            text.destroy();
+        })
+
+        this.equipOwnedTextDebug = []
+
+        const ownedTextStyle: Phaser.Types.GameObjects.Text.TextStyle = {
+            fontSize: '16px',
+            color: '#fff',
+            align: 'right',
+            backgroundColor: '#000000',
+            padding: { left: 8, right: 8, top: 4, bottom: 4 }
         }
+
+        this.equipOwned.machines.forEach((machine: MachineType, index: number) => {
+            const text = this.add.text(this.scale.width - 20, 70 + 26*index, machine.label, ownedTextStyle);
+            text.setInteractive({ useHandCursor: true });
+            text.setOrigin(1, 0);
+            text.on('pointerdown', () => {
+                this.pickMachineFromOwned(machine);
+            });
+            this.equipOwnedTextDebug.push(text);
+        })
+    }
+
+    pickMachineFromAvailable(machine: MachineType) {
+        const picked = this.equipToBuy.pick(machine);
+        this.equipOwned.addMachine(picked);
+
+        this.updateMachinesDebug();
+    }
+
+    pickMachineFromOwned(machine: MachineType) {
+        const picked = this.equipOwned.pick(machine);
+        this.equipToBuy.addMachine(picked);
+
+        this.updateMachinesDebug();
     }
 
     gameOver () {
