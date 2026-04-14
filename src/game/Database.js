@@ -47,3 +47,8 @@ export const MachineList = [
     { id: 19, label: "Capillaroscope", diseases: [21], purchaseCost: 1000, usageCost: 200 },
     { id: 20, label: "Blood analyzer (hematology analyzer)", diseases: [22, 23, 24], purchaseCost: 1000, usageCost: 200 },
 ]
+
+export const PatientDetailsList = [
+    { gender: "m", name: "John" },
+    { gender: "f", name: "Jane" }
+]

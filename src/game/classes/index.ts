@@ -1,4 +1,3 @@
-import { Disease } from "./Disease";
 import { Machine } from "./Machine";
 import { Patient } from "./Patient";
 import { Equip } from "./Equip";
@@ -9,11 +8,18 @@ export type DiseaseType = {
 }
 
 export type EquipType = {
-  machines: Array<MachineType>;
+  machines: MachineType[];
+}
+
+export type PatientDetailsType = {
+  gender: string;
+  name: string;
 }
 
 export type PatientType = {
   disease: DiseaseType;
+  name: PatientDetailsType["name"];
+  gender: PatientDetailsType["gender"];
   costDiagnosisOk: number;
   costDiagnosisNotOk: number;
 }
@@ -26,7 +32,6 @@ export type MachineType = {
 }
 
 export {
-  Disease,
   Machine,
   Patient,
   Equip,
