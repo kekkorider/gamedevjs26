@@ -4,7 +4,7 @@ import { EventBus } from "../EventBus";
 import { MachineList } from "../Database";
 
 export class Equip {
-  machines: Array<MachineType> = [];
+  machines: MachineType[] = [];
 
   constructor() {}
 
