@@ -52,14 +52,45 @@ export class Game extends Phaser.Scene {
 
         console.log('👨‍⚕️ New patient:', this.patient);
 
-        this.updateUI();
+        this.updatePatientInfoUI();
+        this.patientInfoText.setVisible(true);
     }
 
     createUI() {
-        this.scoreText = this.add.text(20, 16, `Money: ${this.money}`, { fontSize: '28px', color: '#fff' });
+        {
+            const style: Phaser.Types.GameObjects.Text.TextStyle = {
+                fontSize: '20px',
+                color: '#fff',
+                align: 'left',
+                padding: { left: 8, right: 8, top: 4, bottom: 4 }
+            };
 
-        this.maxEquipText = this.add.text(this.scale.width - 20, 32, `Max equip: ${this.maxEquip}`, { fontSize: '24px', color: '#fff', align: 'right' });
-        this.maxEquipText.setOrigin(1, 0);
+            this.scoreText = this.add.text(20, 16, `Money: ${this.money}`, style);
+        }
+
+        {
+            const style: Phaser.Types.GameObjects.Text.TextStyle = {
+                fontSize: '20px',
+                color: '#fff',
+                align: 'right',
+            };
+
+            this.maxEquipText = this.add.text(this.scale.width - 20, 32, `Max equip: ${this.maxEquip}`, style);
+            this.maxEquipText.setOrigin(1, 0);
+        }
+
+        {
+            const style: Phaser.Types.GameObjects.Text.TextStyle = {
+                fontSize: '24px',
+                color: '#fff',
+                backgroundColor: '#121212',
+                align: 'left',
+                padding: { left: 16, right: 16, top: 8, bottom: 8 }
+            }
+
+            this.patientInfoText = this.add.text(20, 80, '', style);
+            this.patientInfoText.setVisible(false);
+        }
 
         const newRoundButton = new Button(
             this,
@@ -92,16 +123,16 @@ export class Game extends Phaser.Scene {
 
     updateUI() {
         this.scoreText.setText(`Money: ${this.money}`);
+    }
 
-//         const infoText = `
-// Name: ${this.patient?.name}
-// Gender: ${this.patient?.gender === 'm' ? 'Male' : 'Female'}
-// Disease: ${this.patient?.disease.id}
-// Cost Diagnosis OK: ${this.patient?.costDiagnosisOk}
-// Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}
-//         `;
-//         this.patientInfoText.setText(infoText);
-//         this.patientInfoText.setPadding({ left: 32, right: 32, top: 8, bottom: 8 });
+    updatePatientInfoUI() {
+        const text: string = `Name: ${this.patient?.name}
+Gender: ${this.patient?.gender === 'm' ? 'Male' : 'Female'}
+Disease ID: ${this.patient?.disease.id}
+Disease Name: ${this.patient?.disease.label}
+Cost Diagnosis OK: ${this.patient?.costDiagnosisOk}
+Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
+        this.patientInfoText.setText(text);
     }
 
     checkMoney() {

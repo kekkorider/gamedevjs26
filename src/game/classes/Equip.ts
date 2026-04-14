@@ -1,4 +1,3 @@
-import { Math } from "phaser";
 import { MachineType } from "./index";
 import { EVENTS } from "../Constants";
 import { EventBus } from "../EventBus";

@@ -12,7 +12,9 @@ const game = ref();
 const emit = defineEmits([EVENTS.CURRENT_ACTIVE_SCENE]);
 
 onMounted(() => {
-  game.value = StartGame("wavedash-target");
+  void (async () => {
+    game.value = await StartGame("wavedash-target");
+  })();
 
   EventBus.on(EVENTS.CURRENT_SCENE_READY, (scene_instance: Phaser.Scene) => {
     emit(EVENTS.CURRENT_ACTIVE_SCENE, scene_instance);
