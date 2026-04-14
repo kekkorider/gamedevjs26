@@ -8,12 +8,28 @@ export class Equip {
 
   constructor() {}
 
+  count() {
+    return this.machines.length;
+  }
+
   addMachine(machine: MachineType | null) {
     if (machine === null) return;
 
     this.machines.push(machine);
 
     EventBus.emit(EVENTS.MACHINE_PURCHASED, machine);
+  }
+
+  selectMachine(machine: MachineType) {
+    const index = this.machines.findIndex(m => m.id === machine.id);
+    const item = this.machines.slice(index, index + 1);
+    const selected = item[0];
+
+    return selected;
+  }
+
+  hasMachine(machine: MachineType) {
+    return this.machines.includes(machine);
   }
 
   pick(machine: MachineType) {
