@@ -3,7 +3,7 @@ import { DiseaseType } from "./index";
 export class Disease {
   disease: DiseaseType;
 
-  constuctor(disease: DiseaseType) {
+  constructor(disease: DiseaseType) {
     this.disease = disease;
   }
 }

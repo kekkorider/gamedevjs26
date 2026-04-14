@@ -4,10 +4,13 @@ import PhaserGame from "./PhaserGame.vue";
 
 // Event emitted from the PhaserGame component
 const currentScene = (scene: Scene) => {
-    // Do stuff
+  console.warn("⚠️ Changed scene");
+  console.log(scene);
+  console.log("------");
+  console.log("");
 };
 </script>
 
 <template>
-    <PhaserGame ref="phaserRef" @current-active-scene="currentScene" />
+  <PhaserGame ref="phaserRef" @current-active-scene="currentScene" />
 </template>

@@ -1,11 +1,10 @@
 import { EventBus } from '../EventBus';
+import { EVENTS } from '../Constants';
 import * as Phaser from 'phaser';
 
-export class Game extends Phaser.Scene
-{
+export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
     scoreText: Phaser.GameObjects.Text;
-    score: number = 0;
     isGameOver: boolean = false;
     timer: Phaser.Time.TimerEvent;
     money: number = 10;
@@ -21,10 +20,12 @@ export class Game extends Phaser.Scene
 
         this.scoreText = this.add.text(16, 16, 'Money: 0', { fontSize: '32px', color: '#fff' });
 
-        EventBus.emit('current-scene-ready', this);
+        EventBus.emit(EVENTS.CURRENT_SCENE_READY, this);
     }
 
     update() {}
+
+    newRound() {}
 
     createTimer() {
         this.timer = this.time.addEvent({

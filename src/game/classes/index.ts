@@ -1,3 +1,8 @@
+import { Disease } from "./Disease";
+import { Machine } from "./Machine";
+import { Patient } from "./Patient";
+import { Equip } from "./Equip";
+
 export type DiseaseType = {
   id: string;
   label: string;
@@ -17,4 +22,11 @@ export type MachineType = {
   diseases: DiseaseType[];
   purchaseCost: number;
   usageCost: number;
+}
+
+export {
+  Disease,
+  Machine,
+  Patient,
+  Equip,
 }

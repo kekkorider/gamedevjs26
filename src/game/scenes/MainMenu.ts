@@ -1,6 +1,6 @@
 import { GameObjects, Scene } from 'phaser';
-
 import { EventBus } from '../EventBus';
+import { EVENTS } from '../Constants';
 
 export class MainMenu extends Scene
 {
@@ -37,7 +37,7 @@ export class MainMenu extends Scene
             this.changeScene();
         })
 
-        EventBus.emit('current-scene-ready', this);
+        EventBus.emit(EVENTS.CURRENT_SCENE_READY, this);
     }
 
     changeScene() {
