@@ -5,6 +5,7 @@ import { Machine, Patient, DiseaseType, Equip, MachineType } from '../classes';
 import { Button } from '../ui/Button';
 import { DiseaseList, MachineList, PatientDetailsType, PatientDetailsList } from '../Database';
 
+import { ScrollablePanel } from 'phaser3-rex-plugins/templates/ui/ui-components';
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
     scoreText: Phaser.GameObjects.Text;
@@ -20,6 +21,7 @@ export class Game extends Phaser.Scene {
     equipToBuy: Equip = new Equip();
     equipOwnedTextDebug: Array<Phaser.GameObjects.Text> = [];
     equipToBuyTextDebug: Array<Phaser.GameObjects.Text> = [];
+    equipOwnedPanel: ScrollablePanel;
 
     constructor () {
         super('Game');
@@ -36,6 +38,7 @@ export class Game extends Phaser.Scene {
         this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[0]));
         this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[1]));
         this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[2]));
+        this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[3]));
 
         // this.updateMachinesDebug();
     }
@@ -54,6 +57,8 @@ export class Game extends Phaser.Scene {
 
         this.updatePatientInfoUI();
         this.patientInfoText.setVisible(true);
+
+        this.createMachineSelectorPanel();
     }
 
     createUI() {
@@ -113,6 +118,69 @@ export class Game extends Phaser.Scene {
         );
         increaseMaxEquipButton.setOrigin(1, 1);
         increaseMaxEquipButton.setFontSize(20);
+    }
+
+    createMachineSelectorPanel() {
+        const buttonHeight: number = 100
+        const gap: integer = 5
+        const panelHeight: number = (buttonHeight + (gap * 2)) * 1.5
+        const panelWidth: number = this.scale.width * 0.6
+        const itemsPerRow: integer = 3
+
+        const createGrid = (scene: Phaser.Scene) => {
+            const sizer = scene.rexUI.add.fixWidthSizer({
+                space: {
+                    left: gap,
+                    right: gap,
+                    top: gap,
+                    bottom: gap,
+                    item: gap,
+                    line: gap,
+                },
+            })
+            sizer.addBackground(scene.rexUI.add.roundRectangle(0, 0, 10, 10, 10, 0xff0000))
+
+            const itemWidth: number = (panelWidth - gap * (itemsPerRow + 1)) / itemsPerRow
+
+            this.equipOwned.machines.forEach((machine: MachineType) => {
+                sizer.add(scene.rexUI.add.label({
+                    orientation: 'x',
+                    width: itemWidth,
+                    height: buttonHeight,
+                    background: scene.rexUI.add.roundRectangle(0, 0, 1, 1, 10, 0xaa0000),
+                    text: scene.add.text(0, 0, machine.label, { fontSize: '16px', color: '#fff' }),
+                    align: 'left',
+                    space: {
+                        left: 20,
+                        right: 20
+                    },
+                    wrapText: true
+                })).layout()
+            })
+
+            sizer.layout()
+
+            return sizer
+        }
+
+        this.equipOwnedPanel = this.rexUI.add.scrollablePanel({
+            x: 20,
+            y: 300,
+            width: panelWidth,
+            height: panelHeight,
+            scrollMode: 0,
+            background: this.rexUI.add.roundRectangle(0, 0, 1, 1, 8, 0xff0ff0, 0.4),
+            panel: {
+                child: createGrid(this),
+                mask: true
+            },
+            mouseWheelScroller: {
+                focus: false,
+                speed: 0.4
+            }
+        })
+        .setOrigin(0)
+        .layout()
     }
 
     addMachine(Machine: Machine) {
