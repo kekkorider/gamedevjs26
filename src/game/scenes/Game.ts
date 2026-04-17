@@ -143,7 +143,7 @@ export class Game extends Phaser.Scene {
             const itemWidth: number = (panelWidth - gap * (itemsPerRow + 1)) / itemsPerRow
 
             this.equipOwned.machines.forEach((machine: MachineType) => {
-                sizer.add(scene.rexUI.add.label({
+                const label = scene.rexUI.add.label({
                     orientation: 'x',
                     width: itemWidth,
                     height: buttonHeight,
@@ -154,8 +154,16 @@ export class Game extends Phaser.Scene {
                         left: 20,
                         right: 20
                     },
-                    wrapText: true
-                })).layout()
+                    wrapText: true,
+                })
+
+                label.setInteractive({ useHandCursor: true })
+
+                label.on('pointerdown', () => {
+                    this.selectMachine(machine);
+                })
+
+                sizer.add(label).layout()
             })
 
             sizer.layout()
