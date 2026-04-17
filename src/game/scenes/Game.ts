@@ -3,9 +3,27 @@ import { EVENTS } from '../Constants';
 import * as Phaser from 'phaser';
 import { Machine, Patient, DiseaseType, Equip, MachineType } from '../classes';
 import { Button } from '../ui/Button';
-import { DiseaseList, MachineList, PatientDetailsType, PatientDetailsList } from '../Database';
+import {
+    DiseaseList,
+    MachineList,
+    PatientDetailsType,
+    PatientDetailsList
+} from '../Database';
 
-import { ScrollablePanel } from 'phaser3-rex-plugins/templates/ui/ui-components';
+import {
+    ScrollablePanel,
+    FixWidthSizer
+} from 'phaser3-rex-plugins/templates/ui/ui-components';
+
+type EquipOwnedConfigType = {
+    buttonHeight: number;
+    gap: number;
+    panelHeight: number;
+    panelWidth: number;
+    itemsPerRow: number;
+    itemWidth: number;
+}
+
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
     scoreText: Phaser.GameObjects.Text;
@@ -22,6 +40,7 @@ export class Game extends Phaser.Scene {
     equipOwnedTextDebug: Array<Phaser.GameObjects.Text> = [];
     equipToBuyTextDebug: Array<Phaser.GameObjects.Text> = [];
     equipOwnedPanel: ScrollablePanel;
+    equipOwnedConfig: EquipOwnedConfigType
 
     constructor () {
         super('Game');
@@ -40,7 +59,23 @@ export class Game extends Phaser.Scene {
         this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[2]));
         this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[3]));
 
+        const buttonHeight: number = 100
+        const gap: number = 5
+        const panelWidth: number = this.scale.width * 0.6
+        const itemsPerRow: number = 3
+
+        this.equipOwnedConfig = {
+            buttonHeight,
+            gap,
+            panelHeight: ((buttonHeight + (gap * 2)) * 1.5),
+            panelWidth,
+            itemsPerRow,
+            itemWidth: ((panelWidth - gap * (itemsPerRow + 1)) / itemsPerRow)
+        }
+
         // this.updateMachinesDebug();
+        this.createMachineSelectorPanel();
+        this.equipOwnedPanel.setVisible(false);
     }
 
     update() {}
@@ -58,7 +93,7 @@ export class Game extends Phaser.Scene {
         this.updatePatientInfoUI();
         this.patientInfoText.setVisible(true);
 
-        this.createMachineSelectorPanel();
+        this.equipOwnedPanel.setVisible(true);
     }
 
     createUI() {
@@ -121,52 +156,17 @@ export class Game extends Phaser.Scene {
     }
 
     createMachineSelectorPanel() {
-        const buttonHeight: number = 100
-        const gap: integer = 5
-        const panelHeight: number = (buttonHeight + (gap * 2)) * 1.5
-        const panelWidth: number = this.scale.width * 0.6
-        const itemsPerRow: integer = 3
-
         const createGrid = (scene: Phaser.Scene) => {
             const sizer = scene.rexUI.add.fixWidthSizer({
                 space: {
-                    left: gap,
-                    right: gap,
-                    top: gap,
-                    bottom: gap,
-                    item: gap,
-                    line: gap,
+                    left: this.equipOwnedConfig.gap,
+                    right: this.equipOwnedConfig.gap,
+                    top: this.equipOwnedConfig.gap,
+                    bottom: this.equipOwnedConfig.gap,
+                    item: this.equipOwnedConfig.gap,
+                    line: this.equipOwnedConfig.gap,
                 },
             })
-            sizer.addBackground(scene.rexUI.add.roundRectangle(0, 0, 10, 10, 10, 0xff0000))
-
-            const itemWidth: number = (panelWidth - gap * (itemsPerRow + 1)) / itemsPerRow
-
-            this.equipOwned.machines.forEach((machine: MachineType) => {
-                const label = scene.rexUI.add.label({
-                    orientation: 'x',
-                    width: itemWidth,
-                    height: buttonHeight,
-                    background: scene.rexUI.add.roundRectangle(0, 0, 1, 1, 10, 0xaa0000),
-                    text: scene.add.text(0, 0, machine.label, { fontSize: '16px', color: '#fff' }),
-                    align: 'left',
-                    space: {
-                        left: 20,
-                        right: 20
-                    },
-                    wrapText: true,
-                })
-
-                label.setInteractive({ useHandCursor: true })
-
-                label.on('pointerdown', () => {
-                    this.selectMachine(machine);
-                })
-
-                sizer.add(label).layout()
-            })
-
-            sizer.layout()
 
             return sizer
         }
@@ -174,8 +174,8 @@ export class Game extends Phaser.Scene {
         this.equipOwnedPanel = this.rexUI.add.scrollablePanel({
             x: 20,
             y: 300,
-            width: panelWidth,
-            height: panelHeight,
+            width: this.equipOwnedConfig.panelWidth,
+            height: this.equipOwnedConfig.panelHeight,
             scrollMode: 0,
             background: this.rexUI.add.roundRectangle(0, 0, 1, 1, 8, 0xff0ff0, 0.4),
             panel: {
@@ -189,6 +189,12 @@ export class Game extends Phaser.Scene {
         })
         .setOrigin(0)
         .layout()
+
+        this.addMachineToEquipOwnedPanel(MachineList[0]);
+        this.addMachineToEquipOwnedPanel(MachineList[1]);
+        this.addMachineToEquipOwnedPanel(MachineList[2]);
+        this.addMachineToEquipOwnedPanel(MachineList[3]);
+        this.equipOwnedPanel.layout();
     }
 
     addMachine(Machine: Machine) {
@@ -315,6 +321,46 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
         // this.updateMachinesDebug();
 
         console.log('⏸️ Total machines selected:', this.selectedEquip.count());
+    }
+
+    createMachineButton(scene: Phaser.Scene, machine: MachineType) {
+        const label = scene.rexUI.add.label({
+            orientation: 'x',
+            width: this.equipOwnedConfig.itemWidth,
+            height: this.equipOwnedConfig.buttonHeight,
+            background: scene.rexUI.add.roundRectangle(0, 0, 1, 1, 10, 0xaa0000),
+            text: scene.add.text(0, 0, machine.label, { fontSize: '16px', color: '#fff' }),
+            align: 'left',
+            space: {
+                left: 20,
+                right: 20
+            },
+            wrapText: true,
+        })
+
+        label.setInteractive({ useHandCursor: true })
+
+        return label
+    }
+
+    addMachineToEquipOwnedPanel(machine: MachineType) {
+        const button = this.createMachineButton(this, machine)
+        button.on('pointerdown', () => {
+            button.setAlpha(0.5)
+            button.off('pointerdown')
+            console.log('pointerdown', button)
+        });
+
+        const panel = this.equipOwnedPanel.getElement('panel') as FixWidthSizer
+        panel.add(button)
+    }
+
+    removeMachineFromEquipOwnedPanel(machine: MachineType) {
+        const panel = this.equipOwnedPanel.getElement('panel') as FixWidthSizer
+        const button = panel.getChildren().find((child: any) => child.text === machine.label) as Phaser.GameObjects.GameObject
+
+        panel.remove(button, true)
+        panel.layout()
     }
 
     gameOver () {
