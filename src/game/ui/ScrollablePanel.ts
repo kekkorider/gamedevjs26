@@ -51,6 +51,18 @@ export class ScrollablePanelUI {
     this.createPanel(x, y)
   }
 
+  hide() {
+    this.panel.setVisible(false);
+  }
+
+  show() {
+    this.panel.setVisible(true);
+  }
+
+  layout() {
+    this.panel.layout();
+  }
+
   private createPanel(x: number, y: number) {
     this.panel = this.scene.rexUI.add.scrollablePanel({
       x,
@@ -64,7 +76,7 @@ export class ScrollablePanelUI {
         mask: true
       },
       mouseWheelScroller: {
-        focus: false,
+        focus: 2,
         speed: 0.4
       }
     })

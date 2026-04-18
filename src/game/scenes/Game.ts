@@ -12,15 +12,6 @@ import {
 
 import { ScrollablePanelUI, PanelConfigType, ButtonConfigType } from '../ui/ScrollablePanel';
 
-type InventoryConfig = {
-    buttonHeight: number;
-    gap: number;
-    panelHeight: number;
-    panelWidth: number;
-    itemsPerRow: number;
-    itemWidth: number;
-}
-
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
     scoreText: Phaser.GameObjects.Text;
@@ -33,12 +24,13 @@ export class Game extends Phaser.Scene {
     equipToBuyTextDebug: Array<Phaser.GameObjects.Text> = [];
 
     inventory: Equip = new Equip();
-    inventorySelected: Equip = new Equip();
     inventoryTextDebug: Array<Phaser.GameObjects.Text> = [];
     inventoryPanel: ScrollablePanelUI;
     inventoryMax: number = 3;
     inventoryMaxText: Phaser.GameObjects.Text;
-    inventoryConfig: InventoryConfig
+
+    selection: Equip = new Equip();
+    selectionPanel: ScrollablePanelUI;
 
     constructor () {
         super('Game');
@@ -66,7 +58,7 @@ export class Game extends Phaser.Scene {
             {
                 itemsPerRow: 2,
                 width: this.scale.width * 0.5,
-                height: 120,
+                height: 150,
                 padding: 12,
                 spacing: 8
             } as PanelConfigType,
@@ -74,13 +66,31 @@ export class Game extends Phaser.Scene {
                 height: 100
             } as ButtonConfigType
         );
-        this.addMachineToInventoryPanel(MachineList[0]);
-        this.addMachineToInventoryPanel(MachineList[1]);
-        this.addMachineToInventoryPanel(MachineList[2]);
-        this.addMachineToInventoryPanel(MachineList[3]);
-        this.addMachineToInventoryPanel(MachineList[4]);
-        this.inventoryPanel.panel.layout();
-        this.inventoryPanel.panel.setVisible(false);
+
+        for (const machine of this.inventory.machines) {
+            this.addMachineToInventoryPanel(machine);
+        }
+        this.inventoryPanel.layout();
+        this.inventoryPanel.hide();
+
+        this.selectionPanel = new ScrollablePanelUI(
+            this,
+            this.scale.width - 20,
+            300,
+            {
+                itemsPerRow: 1,
+                width: this.scale.width * 0.3,
+                height: 260,
+                padding: 12,
+                spacing: 8
+            },
+            {
+                height: 100
+            }
+        )
+        this.selectionPanel.panel.setOrigin(1, 0);
+        this.selectionPanel.layout();
+        this.selectionPanel.hide();
     }
 
     update() {}
@@ -98,7 +108,8 @@ export class Game extends Phaser.Scene {
         this.updatePatientInfoUI();
         this.patientInfoText.setVisible(true);
 
-        this.inventoryPanel.panel.setVisible(true);
+        this.inventoryPanel.show();
+        this.selectionPanel.show();
     }
 
     createUI() {
@@ -231,12 +242,11 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
             const text = this.add.text(this.scale.width - 20, 70 + 26*index, machine.label, ownedTextStyle);
             text.setOrigin(1, 0);
 
-            if (this.inventorySelected.hasMachine(machine)) {
+            if (this.selection.hasMachine(machine)) {
                 text.setBackgroundColor('#dd0000');
             } else {
                 text.setInteractive({ useHandCursor: true });
                 text.on('pointerdown', () => {
-                    // this.pickMachineFromOwned(machine);
                     this.selectMachine(machine);
                 });
             }
@@ -268,27 +278,30 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
     }
 
     selectMachine(machine: MachineType) {
-        if (this.inventorySelected.hasMachine(machine)) {
+        if (this.selection.hasMachine(machine)) {
             return console.log('❌ Machine already in selected equip');
         }
 
-        if (this.inventorySelected.count() >= this.inventoryMax) {
+        if (this.selection.count() >= this.inventoryMax) {
             return console.log('❌ Max equip reached');
         } else {
             const picked = this.inventory.selectMachine(machine);
-            this.inventorySelected.addMachine(picked);
+
+            this.selection.addMachine(picked);
+            this.selectionPanel.addItem(picked);
+            this.selectionPanel.layout();
 
             console.log('✅ Machine selected.', machine);
         }
 
         // this.updateMachinesDebug();
 
-        console.log('⏸️ Total machines selected:', this.inventorySelected.count());
+        console.log('⏸️ Total machines selected:', this.selection.count());
     }
 
     addMachineToInventoryPanel(machine: MachineType) {
         this.inventoryPanel.addItem(machine, () => {
-            this.inventoryPanel.removeItem(machine);
+            this.selectMachine(machine)
         })
     }
 
