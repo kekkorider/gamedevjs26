@@ -1,8 +1,15 @@
 import { Scene, GameObjects } from 'phaser';
 import { ScrollablePanel, FixWidthSizer } from 'phaser3-rex-plugins/templates/ui/ui-components';
 
-export type ButtonConfigType = {
+export type PanelConfigType = {
+  itemsPerRow: number;
   width: number;
+  height: number;
+  padding: number;
+  spacing: number;
+}
+
+export type ButtonConfigType = {
   height: number;
 }
 
@@ -11,25 +18,45 @@ export class ScrollablePanelUI {
   panel: ScrollablePanel;
   items: Array<any> = [];
   buttonSizer: FixWidthSizer;
+
+  panelConfig: PanelConfigType = {
+    itemsPerRow: 3,
+    width: 300,
+    height: 40,
+    padding: 8,
+    spacing: 8
+  };
+
   buttonConfig: ButtonConfigType = {
-    width: 100,
     height: 40
   };
 
-  constructor(scene: Scene, x: number, y: number, width: number, height: number, buttonConfig?: ButtonConfigType) {
+  constructor(scene: Scene, x: number, y: number, panelConfig?: PanelConfigType, buttonConfig?: ButtonConfigType) {
     this.scene = scene;
 
-    this.createPanel(x, y, width, height)
+    if (panelConfig) {
+      this.panelConfig = {
+        ...this.panelConfig,
+        ...panelConfig
+      };
+    }
 
-    buttonConfig && (this.buttonConfig = buttonConfig)
+    if (buttonConfig) {
+      this.buttonConfig = {
+        ...this.buttonConfig,
+        ...buttonConfig
+      };
+    }
+
+    this.createPanel(x, y)
   }
 
-  private createPanel(x: number, y: number, width: number, height: number) {
+  private createPanel(x: number, y: number) {
     this.panel = this.scene.rexUI.add.scrollablePanel({
       x,
       y,
-      width,
-      height,
+      width: this.panelConfig.width,
+      height: this.panelConfig.height,
       scrollMode: 0,
       background: this.scene.rexUI.add.roundRectangle(0, 0, 1, 1, 8, 0xff0ff0, 0.4),
       panel: {
@@ -48,12 +75,12 @@ export class ScrollablePanelUI {
   private createGrid() {
     const sizer: FixWidthSizer = this.scene.rexUI.add.fixWidthSizer({
       space: {
-        left: 8,
-        right: 8,
-        top: 8,
-        bottom: 8,
-        item: 8,
-        line: 8
+        left: this.panelConfig.padding,
+        right: this.panelConfig.padding,
+        top: this.panelConfig.padding,
+        bottom: this.panelConfig.padding,
+        item: this.panelConfig.spacing,
+        line: this.panelConfig.spacing
       }
     })
 
@@ -61,9 +88,18 @@ export class ScrollablePanelUI {
   }
 
   createGridButton(item: any) {
+    const {
+      width: panelWidth,
+      padding,
+      spacing,
+      itemsPerRow
+    } = this.panelConfig
+
+    const buttonWidth = (panelWidth - padding * 2 - spacing * (itemsPerRow - 1)) / itemsPerRow;
+
     const label = this.scene.rexUI.add.label({
       orientation: 'x',
-      width: this.buttonConfig.width,
+      width: buttonWidth,
       height: this.buttonConfig.height,
       background: this.scene.rexUI.add.roundRectangle(0, 0, 1, 1, 10, 0xaa0000),
       text: this.scene.add.text(0, 0, item.label, { fontSize: '16px', color: '#fff' }),

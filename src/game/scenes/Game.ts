@@ -10,7 +10,7 @@ import {
     PatientDetailsList
 } from '../Database';
 
-import { ScrollablePanelUI, ButtonConfigType } from '../ui/ScrollablePanel';
+import { ScrollablePanelUI, PanelConfigType, ButtonConfigType } from '../ui/ScrollablePanel';
 
 type InventoryConfig = {
     buttonHeight: number;
@@ -57,30 +57,20 @@ export class Game extends Phaser.Scene {
         this.inventory.addMachine(this.equipToBuy.pick(MachineList[2]));
         this.inventory.addMachine(this.equipToBuy.pick(MachineList[3]));
 
-        const buttonHeight: number = 100
-        const gap: number = 5
-        const panelWidth: number = this.scale.width * 0.6
-        const itemsPerRow: number = 3
-
-        this.inventoryConfig = {
-            buttonHeight,
-            gap,
-            panelHeight: ((buttonHeight + (gap * 2)) * 1.5),
-            panelWidth,
-            itemsPerRow,
-            itemWidth: ((panelWidth - gap * (itemsPerRow + 1)) / itemsPerRow)
-        }
-
         // this.updateMachinesDebug();
 
         this.inventoryPanel = new ScrollablePanelUI(
             this,
             20,
             300,
-            panelWidth,
-            ((buttonHeight + (gap * 2)) * 1.5),
             {
-                width: ((panelWidth - gap * (itemsPerRow + 1)) / itemsPerRow),
+                itemsPerRow: 2,
+                width: this.scale.width * 0.5,
+                height: 120,
+                padding: 12,
+                spacing: 8
+            } as PanelConfigType,
+            {
                 height: 100
             } as ButtonConfigType
         );
@@ -88,6 +78,7 @@ export class Game extends Phaser.Scene {
         this.addMachineToInventoryPanel(MachineList[1]);
         this.addMachineToInventoryPanel(MachineList[2]);
         this.addMachineToInventoryPanel(MachineList[3]);
+        this.addMachineToInventoryPanel(MachineList[4]);
         this.inventoryPanel.panel.layout();
         this.inventoryPanel.panel.setVisible(false);
     }
@@ -293,26 +284,6 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
         // this.updateMachinesDebug();
 
         console.log('⏸️ Total machines selected:', this.inventorySelected.count());
-    }
-
-    createMachineButton(scene: Phaser.Scene, machine: MachineType) {
-        const label = scene.rexUI.add.label({
-            orientation: 'x',
-            width: this.inventoryConfig.itemWidth,
-            height: this.inventoryConfig.buttonHeight,
-            background: scene.rexUI.add.roundRectangle(0, 0, 1, 1, 10, 0xaa0000),
-            text: scene.add.text(0, 0, machine.label, { fontSize: '16px', color: '#fff' }),
-            align: 'left',
-            space: {
-                left: 20,
-                right: 20
-            },
-            wrapText: true,
-        })
-
-        label.setInteractive({ useHandCursor: true })
-
-        return label
     }
 
     addMachineToInventoryPanel(machine: MachineType) {
