@@ -10,10 +10,7 @@ import {
     PatientDetailsList
 } from '../Database';
 
-import {
-    ScrollablePanel,
-    FixWidthSizer
-} from 'phaser3-rex-plugins/templates/ui/ui-components';
+import { ScrollablePanelUI, ButtonConfigType } from '../ui/ScrollablePanel';
 
 type EquipOwnedConfigType = {
     buttonHeight: number;
@@ -39,7 +36,7 @@ export class Game extends Phaser.Scene {
     equipToBuy: Equip = new Equip();
     equipOwnedTextDebug: Array<Phaser.GameObjects.Text> = [];
     equipToBuyTextDebug: Array<Phaser.GameObjects.Text> = [];
-    equipOwnedPanel: ScrollablePanel;
+    equipOwnedPanel: ScrollablePanelUI;
     equipOwnedConfig: EquipOwnedConfigType
 
     constructor () {
@@ -74,8 +71,24 @@ export class Game extends Phaser.Scene {
         }
 
         // this.updateMachinesDebug();
-        this.createMachineSelectorPanel();
-        this.equipOwnedPanel.setVisible(false);
+
+        this.equipOwnedPanel = new ScrollablePanelUI(
+            this,
+            20,
+            300,
+            panelWidth,
+            ((buttonHeight + (gap * 2)) * 1.5),
+            {
+                width: ((panelWidth - gap * (itemsPerRow + 1)) / itemsPerRow),
+                height: 100
+            } as ButtonConfigType
+        );
+        this.addMachineToEquipOwnedPanel(MachineList[0]);
+        this.addMachineToEquipOwnedPanel(MachineList[1]);
+        this.addMachineToEquipOwnedPanel(MachineList[2]);
+        this.addMachineToEquipOwnedPanel(MachineList[3]);
+        this.equipOwnedPanel.panel.layout();
+        this.equipOwnedPanel.panel.setVisible(false);
     }
 
     update() {}
@@ -93,7 +106,7 @@ export class Game extends Phaser.Scene {
         this.updatePatientInfoUI();
         this.patientInfoText.setVisible(true);
 
-        this.equipOwnedPanel.setVisible(true);
+        this.equipOwnedPanel.panel.setVisible(true);
     }
 
     createUI() {
@@ -153,48 +166,6 @@ export class Game extends Phaser.Scene {
         );
         increaseMaxEquipButton.setOrigin(1, 1);
         increaseMaxEquipButton.setFontSize(20);
-    }
-
-    createMachineSelectorPanel() {
-        const createGrid = (scene: Phaser.Scene) => {
-            const sizer = scene.rexUI.add.fixWidthSizer({
-                space: {
-                    left: this.equipOwnedConfig.gap,
-                    right: this.equipOwnedConfig.gap,
-                    top: this.equipOwnedConfig.gap,
-                    bottom: this.equipOwnedConfig.gap,
-                    item: this.equipOwnedConfig.gap,
-                    line: this.equipOwnedConfig.gap,
-                },
-            })
-
-            return sizer
-        }
-
-        this.equipOwnedPanel = this.rexUI.add.scrollablePanel({
-            x: 20,
-            y: 300,
-            width: this.equipOwnedConfig.panelWidth,
-            height: this.equipOwnedConfig.panelHeight,
-            scrollMode: 0,
-            background: this.rexUI.add.roundRectangle(0, 0, 1, 1, 8, 0xff0ff0, 0.4),
-            panel: {
-                child: createGrid(this),
-                mask: true
-            },
-            mouseWheelScroller: {
-                focus: false,
-                speed: 0.4
-            }
-        })
-        .setOrigin(0)
-        .layout()
-
-        this.addMachineToEquipOwnedPanel(MachineList[0]);
-        this.addMachineToEquipOwnedPanel(MachineList[1]);
-        this.addMachineToEquipOwnedPanel(MachineList[2]);
-        this.addMachineToEquipOwnedPanel(MachineList[3]);
-        this.equipOwnedPanel.layout();
     }
 
     addMachine(Machine: Machine) {
@@ -344,23 +315,13 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
     }
 
     addMachineToEquipOwnedPanel(machine: MachineType) {
-        const button = this.createMachineButton(this, machine)
-        button.on('pointerdown', () => {
-            button.setAlpha(0.5)
-            button.off('pointerdown')
-            console.log('pointerdown', button)
-        });
-
-        const panel = this.equipOwnedPanel.getElement('panel') as FixWidthSizer
-        panel.add(button)
+        this.equipOwnedPanel.addItem(machine, () => {
+            this.equipOwnedPanel.removeItem(machine);
+        })
     }
 
     removeMachineFromEquipOwnedPanel(machine: MachineType) {
-        const panel = this.equipOwnedPanel.getElement('panel') as FixWidthSizer
-        const button = panel.getChildren().find((child: any) => child.text === machine.label) as Phaser.GameObjects.GameObject
-
-        panel.remove(button, true)
-        panel.layout()
+        this.equipOwnedPanel.removeItem(machine);
     }
 
     gameOver () {
