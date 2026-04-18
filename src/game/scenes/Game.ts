@@ -12,7 +12,7 @@ import {
 
 import { ScrollablePanelUI, ButtonConfigType } from '../ui/ScrollablePanel';
 
-type EquipOwnedConfigType = {
+type InventoryConfig = {
     buttonHeight: number;
     gap: number;
     panelHeight: number;
@@ -24,20 +24,21 @@ type EquipOwnedConfigType = {
 export class Game extends Phaser.Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
     scoreText: Phaser.GameObjects.Text;
-    maxEquipText: Phaser.GameObjects.Text;
     patientInfoText: Phaser.GameObjects.Text;
     isGameOver: boolean = false;
     timer: Phaser.Time.TimerEvent;
     money: number = 10000;
     patient: Patient | null = null;
-    selectedEquip: Equip = new Equip();
-    maxEquip: number = 3;
-    equipOwned: Equip = new Equip();
     equipToBuy: Equip = new Equip();
-    equipOwnedTextDebug: Array<Phaser.GameObjects.Text> = [];
     equipToBuyTextDebug: Array<Phaser.GameObjects.Text> = [];
-    equipOwnedPanel: ScrollablePanelUI;
-    equipOwnedConfig: EquipOwnedConfigType
+
+    inventory: Equip = new Equip();
+    inventorySelected: Equip = new Equip();
+    inventoryTextDebug: Array<Phaser.GameObjects.Text> = [];
+    inventoryPanel: ScrollablePanelUI;
+    inventoryMax: number = 3;
+    inventoryMaxText: Phaser.GameObjects.Text;
+    inventoryConfig: InventoryConfig
 
     constructor () {
         super('Game');
@@ -51,17 +52,17 @@ export class Game extends Phaser.Scene {
         EventBus.emit(EVENTS.CURRENT_SCENE_READY, this);
 
         this.equipToBuy.fill();
-        this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[0]));
-        this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[1]));
-        this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[2]));
-        this.equipOwned.addMachine(this.equipToBuy.pick(MachineList[3]));
+        this.inventory.addMachine(this.equipToBuy.pick(MachineList[0]));
+        this.inventory.addMachine(this.equipToBuy.pick(MachineList[1]));
+        this.inventory.addMachine(this.equipToBuy.pick(MachineList[2]));
+        this.inventory.addMachine(this.equipToBuy.pick(MachineList[3]));
 
         const buttonHeight: number = 100
         const gap: number = 5
         const panelWidth: number = this.scale.width * 0.6
         const itemsPerRow: number = 3
 
-        this.equipOwnedConfig = {
+        this.inventoryConfig = {
             buttonHeight,
             gap,
             panelHeight: ((buttonHeight + (gap * 2)) * 1.5),
@@ -72,7 +73,7 @@ export class Game extends Phaser.Scene {
 
         // this.updateMachinesDebug();
 
-        this.equipOwnedPanel = new ScrollablePanelUI(
+        this.inventoryPanel = new ScrollablePanelUI(
             this,
             20,
             300,
@@ -83,12 +84,12 @@ export class Game extends Phaser.Scene {
                 height: 100
             } as ButtonConfigType
         );
-        this.addMachineToEquipOwnedPanel(MachineList[0]);
-        this.addMachineToEquipOwnedPanel(MachineList[1]);
-        this.addMachineToEquipOwnedPanel(MachineList[2]);
-        this.addMachineToEquipOwnedPanel(MachineList[3]);
-        this.equipOwnedPanel.panel.layout();
-        this.equipOwnedPanel.panel.setVisible(false);
+        this.addMachineToInventoryPanel(MachineList[0]);
+        this.addMachineToInventoryPanel(MachineList[1]);
+        this.addMachineToInventoryPanel(MachineList[2]);
+        this.addMachineToInventoryPanel(MachineList[3]);
+        this.inventoryPanel.panel.layout();
+        this.inventoryPanel.panel.setVisible(false);
     }
 
     update() {}
@@ -106,7 +107,7 @@ export class Game extends Phaser.Scene {
         this.updatePatientInfoUI();
         this.patientInfoText.setVisible(true);
 
-        this.equipOwnedPanel.panel.setVisible(true);
+        this.inventoryPanel.panel.setVisible(true);
     }
 
     createUI() {
@@ -128,8 +129,8 @@ export class Game extends Phaser.Scene {
                 align: 'right',
             };
 
-            this.maxEquipText = this.add.text(this.scale.width - 20, 32, `Max equip: ${this.maxEquip}`, style);
-            this.maxEquipText.setOrigin(1, 0);
+            this.inventoryMaxText = this.add.text(this.scale.width - 20, 32, `Max equip: ${this.inventoryMax}`, style);
+            this.inventoryMaxText.setOrigin(1, 0);
         }
 
         {
@@ -155,17 +156,17 @@ export class Game extends Phaser.Scene {
         newRoundButton.setOrigin(0, 1);
         newRoundButton.setFontSize(20);
 
-        const increaseMaxEquipButton = new Button(
+        const increaseInventoryMaxButton = new Button(
             this,
             this.scale.width - 20,
             this.scale.height - 20,
             'Increase max equip',
             () => {
-                this.maxEquipText.setText(`Max equip: ${++this.maxEquip}`);
+                this.inventoryMaxText.setText(`Max equip: ${++this.inventoryMax}`);
             }
         );
-        increaseMaxEquipButton.setOrigin(1, 1);
-        increaseMaxEquipButton.setFontSize(20);
+        increaseInventoryMaxButton.setOrigin(1, 1);
+        increaseInventoryMaxButton.setFontSize(20);
     }
 
     addMachine(Machine: Machine) {
@@ -221,11 +222,11 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
         })
 
         // OWNED
-        this.equipOwnedTextDebug.forEach((text: Phaser.GameObjects.Text) => {
+        this.inventoryTextDebug.forEach((text: Phaser.GameObjects.Text) => {
             text.destroy();
         })
 
-        this.equipOwnedTextDebug = []
+        this.inventoryTextDebug = []
 
         const ownedTextStyle: Phaser.Types.GameObjects.Text.TextStyle = {
             fontSize: '16px',
@@ -235,11 +236,11 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
             padding: { left: 8, right: 8, top: 4, bottom: 4 }
         }
 
-        this.equipOwned.machines.forEach((machine: MachineType, index: number) => {
+        this.inventory.machines.forEach((machine: MachineType, index: number) => {
             const text = this.add.text(this.scale.width - 20, 70 + 26*index, machine.label, ownedTextStyle);
             text.setOrigin(1, 0);
 
-            if (this.selectedEquip.hasMachine(machine)) {
+            if (this.inventorySelected.hasMachine(machine)) {
                 text.setBackgroundColor('#dd0000');
             } else {
                 text.setInteractive({ useHandCursor: true });
@@ -249,7 +250,7 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
                 });
             }
 
-            this.equipOwnedTextDebug.push(text);
+            this.inventoryTextDebug.push(text);
         })
     }
 
@@ -259,7 +260,7 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
         }
 
         const picked = this.equipToBuy.pick(machine);
-        this.equipOwned.addMachine(picked);
+        this.inventory.addMachine(picked);
 
         this.money -= picked.purchaseCost;
 
@@ -269,36 +270,36 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
     }
 
     pickMachineFromOwned(machine: MachineType) {
-        const picked = this.equipOwned.pick(machine);
+        const picked = this.inventory.pick(machine);
         this.equipToBuy.addMachine(picked);
 
         // this.updateMachinesDebug();
     }
 
     selectMachine(machine: MachineType) {
-        if (this.selectedEquip.hasMachine(machine)) {
+        if (this.inventorySelected.hasMachine(machine)) {
             return console.log('❌ Machine already in selected equip');
         }
 
-        if (this.selectedEquip.count() >= this.maxEquip) {
+        if (this.inventorySelected.count() >= this.inventoryMax) {
             return console.log('❌ Max equip reached');
         } else {
-            const picked = this.equipOwned.selectMachine(machine);
-            this.selectedEquip.addMachine(picked);
+            const picked = this.inventory.selectMachine(machine);
+            this.inventorySelected.addMachine(picked);
 
             console.log('✅ Machine selected.', machine);
         }
 
         // this.updateMachinesDebug();
 
-        console.log('⏸️ Total machines selected:', this.selectedEquip.count());
+        console.log('⏸️ Total machines selected:', this.inventorySelected.count());
     }
 
     createMachineButton(scene: Phaser.Scene, machine: MachineType) {
         const label = scene.rexUI.add.label({
             orientation: 'x',
-            width: this.equipOwnedConfig.itemWidth,
-            height: this.equipOwnedConfig.buttonHeight,
+            width: this.inventoryConfig.itemWidth,
+            height: this.inventoryConfig.buttonHeight,
             background: scene.rexUI.add.roundRectangle(0, 0, 1, 1, 10, 0xaa0000),
             text: scene.add.text(0, 0, machine.label, { fontSize: '16px', color: '#fff' }),
             align: 'left',
@@ -314,14 +315,14 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
         return label
     }
 
-    addMachineToEquipOwnedPanel(machine: MachineType) {
-        this.equipOwnedPanel.addItem(machine, () => {
-            this.equipOwnedPanel.removeItem(machine);
+    addMachineToInventoryPanel(machine: MachineType) {
+        this.inventoryPanel.addItem(machine, () => {
+            this.inventoryPanel.removeItem(machine);
         })
     }
 
-    removeMachineFromEquipOwnedPanel(machine: MachineType) {
-        this.equipOwnedPanel.removeItem(machine);
+    removeMachineFrominventoryPanel(machine: MachineType) {
+        this.inventoryPanel.removeItem(machine);
     }
 
     gameOver () {
