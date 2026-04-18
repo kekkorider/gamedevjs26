@@ -288,7 +288,11 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
             const picked = this.inventory.selectMachine(machine);
 
             this.selection.addMachine(picked);
-            this.selectionPanel.addItem(picked);
+
+            this.selectionPanel.addItem(picked, () => {
+                const pick = this.selection.pick(picked);
+                this.selectionPanel.removeItem(pick);
+            });
             this.selectionPanel.layout();
 
             console.log('✅ Machine selected.', machine);
