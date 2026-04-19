@@ -107,8 +107,8 @@ export class Game extends Phaser.Scene {
         this.buttons.get('newRound')?.setVisible(false);
 
         // Pick a random disease
-        // const disease: DiseaseType = Phaser.Math.RND.pick(DiseaseList);
-        const disease: DiseaseType = DiseaseList[3];
+        const disease: DiseaseType = Phaser.Math.RND.pick(DiseaseList);
+        // const disease: DiseaseType = DiseaseList[3];
 
         // Pick a random patient details (name and gender)
         const details: PatientDetailsType = Phaser.Math.RND.pick(PatientDetailsList);
