@@ -44,4 +44,8 @@ export class Equip {
       this.addMachine(machine);
     });
   }
+
+  empty() {
+    this.machines = [];
+  }
 }

@@ -156,4 +156,12 @@ export class ScrollablePanelUI {
   getItems() {
     return this.items;
   }
+
+  clearItems() {
+    this.items = [];
+
+    const panel = this.panel.getElement('panel') as FixWidthSizer
+    panel.removeAll(true)
+    panel.layout()
+  }
 }

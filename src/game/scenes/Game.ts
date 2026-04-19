@@ -108,18 +108,21 @@ export class Game extends Phaser.Scene {
 
         // Pick a random disease
         const disease: DiseaseType = Phaser.Math.RND.pick(DiseaseList);
+        // const disease: DiseaseType = DiseaseList[3];
 
         // Pick a random patient details (name and gender)
         const details: PatientDetailsType = Phaser.Math.RND.pick(PatientDetailsList);
         this.patient = new Patient(disease, details.name, details.gender, 1000, 2000);
 
-        console.log('👨‍⚕️ New patient:', this.patient);
+        // console.log('👨‍⚕️ New patient:', this.patient);
 
         this.updatePatientInfoUI();
         this.patientInfoText.setVisible(true);
 
         this.inventoryPanel.show();
         this.selectionPanel.show();
+        this.selection.empty();
+        this.selectionPanel.clearItems();
 
         this.buttons.get('calculateResult')?.setVisible(true);
         this.resultBar.reset();
@@ -176,17 +179,21 @@ export class Game extends Phaser.Scene {
             this.buttons.set('newRound', button);
         }
 
-        const increaseInventoryMaxButton = new Button(
-            this,
-            this.scale.width - 20,
-            this.scale.height - 20,
-            'Increase max equip',
-            () => {
-                this.inventoryMaxText.setText(`Max equip: ${++this.inventoryMax}`);
-            }
-        );
-        increaseInventoryMaxButton.setOrigin(1, 1);
-        increaseInventoryMaxButton.setFontSize(20);
+        {
+            const button = new Button(
+                this,
+                this.scale.width - 20,
+                this.scale.height - 20,
+                'Increase max equip',
+                () => {
+                    this.inventoryMaxText.setText(`Max equip: ${++this.inventoryMax}`);
+                }
+            );
+            button.setOrigin(1, 1);
+            button.setFontSize(20);
+
+            this.buttons.set('increaseInventoryMax', button);
+        }
 
         {
             const button = new Button(
@@ -226,12 +233,6 @@ Disease Name: ${this.patient?.disease.label}
 Cost Diagnosis OK: ${this.patient?.costDiagnosisOk}
 Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
         this.patientInfoText.setText(text);
-    }
-
-    checkMoney() {
-        if (this.money <= 0) {
-            this.gameOver();
-        }
     }
 
     updateMachinesDebug() {
@@ -366,9 +367,33 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
         const score = machinesOK / this.selection.count();
         this.resultBar.gainExp(score)
 
-        EventBus.once(EVENTS.PROGRESS_ANIMATION_COMPLETED, (data: ProgressAnimationCompletedEventType) => {
-            console.log('Progress animation completed:', data);
-        })
+        if (score > 0) {
+            EventBus.once(EVENTS.PROGRESS_ANIMATION_COMPLETED, (data: ProgressAnimationCompletedEventType) => {
+                this.checkScore(data);
+            })
+        } else {
+            this.time.addEvent({
+                delay: 500,
+                callback: () => {
+                    const data: ProgressAnimationCompletedEventType = {
+                        level: this.resultBar.getLevel(),
+                        exp: this.resultBar.getExp()
+                    };
+
+                    this.checkScore(data);
+                }
+            })
+        }
+    }
+
+    checkScore(data: ProgressAnimationCompletedEventType) {
+        this.buttons.get('newRound')?.setVisible(true);
+    }
+
+    checkMoney() {
+        if (this.money <= 0) {
+            this.gameOver();
+        }
     }
 
     gameOver () {
