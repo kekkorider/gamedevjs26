@@ -3,6 +3,7 @@ import { EVENTS } from '../Constants';
 import * as Phaser from 'phaser';
 import { Machine, Patient, DiseaseType, Equip, MachineType } from '../classes';
 import { Button } from '../ui/Button';
+import { ResultBar, type ProgressAnimationCompletedEventType } from '../ui/ResultBar';
 import {
     DiseaseList,
     MachineList,
@@ -31,6 +32,10 @@ export class Game extends Phaser.Scene {
 
     selection: Equip = new Equip();
     selectionPanel: ScrollablePanelUI;
+
+    buttons: Map<string, Button> = new Map();
+
+    resultBar: ResultBar;
 
     constructor () {
         super('Game');
@@ -91,11 +96,16 @@ export class Game extends Phaser.Scene {
         this.selectionPanel.panel.setOrigin(1, 0);
         this.selectionPanel.layout();
         this.selectionPanel.hide();
+
+        this.resultBar = new ResultBar(this);
+        this.resultBar.hide();
     }
 
     update() {}
 
     newRound() {
+        this.buttons.get('newRound')?.setVisible(false);
+
         // Pick a random disease
         const disease: DiseaseType = Phaser.Math.RND.pick(DiseaseList);
 
@@ -110,6 +120,10 @@ export class Game extends Phaser.Scene {
 
         this.inventoryPanel.show();
         this.selectionPanel.show();
+
+        this.buttons.get('calculateResult')?.setVisible(true);
+        this.resultBar.reset();
+        this.resultBar.show();
     }
 
     createUI() {
@@ -148,15 +162,19 @@ export class Game extends Phaser.Scene {
             this.patientInfoText.setVisible(false);
         }
 
-        const newRoundButton = new Button(
-            this,
-            20,
-            this.scale.height - 20,
-            'New round',
-            this.newRound.bind(this)
-        );
-        newRoundButton.setOrigin(0, 1);
-        newRoundButton.setFontSize(20);
+        {
+            const button = new Button(
+                this,
+                20,
+                this.scale.height - 20,
+                'New round',
+                this.newRound.bind(this)
+            );
+            button.setOrigin(0, 1);
+            button.setFontSize(20);
+
+            this.buttons.set('newRound', button);
+        }
 
         const increaseInventoryMaxButton = new Button(
             this,
@@ -169,6 +187,25 @@ export class Game extends Phaser.Scene {
         );
         increaseInventoryMaxButton.setOrigin(1, 1);
         increaseInventoryMaxButton.setFontSize(20);
+
+        {
+            const button = new Button(
+                this,
+                20,
+                470,
+                'Calculate result',
+                () => {
+                    this.calculateResult();
+                }
+            );
+
+            button.setFontSize(20);
+            button.setOrigin(0);
+            button.setVisible(false);
+            button.setDepth(100);
+
+            this.buttons.set('calculateResult', button);
+        }
     }
 
     addMachine(Machine: Machine) {
@@ -311,6 +348,27 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
 
     removeMachineFrominventoryPanel(machine: MachineType) {
         this.inventoryPanel.removeItem(machine);
+    }
+
+    calculateResult() {
+        if (this.selection.count() === 0) {
+            return console.log('❌ No machines selected');
+        }
+
+        let machinesOK: number = 0
+
+        for (const machine of this.selection.machines) {
+            if (machine.diseases.includes(this.patient?.disease.id as number)) {
+                machinesOK++;
+            }
+        }
+
+        const score = machinesOK / this.selection.count();
+        this.resultBar.gainExp(score)
+
+        EventBus.once(EVENTS.PROGRESS_ANIMATION_COMPLETED, (data: ProgressAnimationCompletedEventType) => {
+            console.log('Progress animation completed:', data);
+        })
     }
 
     gameOver () {
