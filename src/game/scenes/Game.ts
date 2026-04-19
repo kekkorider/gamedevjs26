@@ -107,8 +107,8 @@ export class Game extends Phaser.Scene {
         this.buttons.get('newRound')?.setVisible(false);
 
         // Pick a random disease
-        const disease: DiseaseType = Phaser.Math.RND.pick(DiseaseList);
-        // const disease: DiseaseType = DiseaseList[3];
+        // const disease: DiseaseType = Phaser.Math.RND.pick(DiseaseList);
+        const disease: DiseaseType = DiseaseList[3];
 
         // Pick a random patient details (name and gender)
         const details: PatientDetailsType = Phaser.Math.RND.pick(PatientDetailsList);
@@ -356,6 +356,14 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
             return console.log('❌ No machines selected');
         }
 
+        this.buttons.get('calculateResult')?.setVisible(false);
+
+        for (const machine of this.selection.machines) {
+            this.money -= machine.usageCost;
+        }
+        this.money = Math.round(this.money);
+        this.updateUI();
+
         let machinesOK: number = 0
 
         for (const machine of this.selection.machines) {
@@ -387,7 +395,19 @@ Cost Diagnosis Not OK: ${this.patient?.costDiagnosisNotOk}`;
     }
 
     checkScore(data: ProgressAnimationCompletedEventType) {
+        if (data.level === 1) {
+            this.money += this.patient?.costDiagnosisOk as number;
+        } else {
+            this.money -= this.patient?.costDiagnosisNotOk as number * (1 - data.exp);
+        }
+
+        this.money = Math.round(this.money);
+
+        this.checkMoney();
+
         this.buttons.get('newRound')?.setVisible(true);
+
+        this.updateUI();
     }
 
     checkMoney() {
